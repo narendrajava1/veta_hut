@@ -1,6 +1,8 @@
-package com.vetahut.order.controller;
+package com.vetahut.order.api;
 
-import com.vetahut.order.model.OrderRequest;
+import com.vetahut.order.application.CreateOrderHandler;
+import com.vetahut.order.dto.OrderRequest;
+import com.vetahut.order.model.Order;
 import com.vetahut.order.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,17 +14,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/orders")
 @RequiredArgsConstructor
 @Tag(name = "Orders", description = "APIs for placing orders")
 public class OrderController {
 
     private final OrderService orderService;
 
+    private final CreateOrderHandler handler;
+
     @Operation(summary = "Place a new order")
     @PostMapping
-    public ResponseEntity<String> placeOrder(@RequestBody OrderRequest request) {
-        orderService.createOrder(request);
-        return ResponseEntity.ok("Order placed successfully!");
+    public ResponseEntity<String> create(@RequestBody OrderRequest request) {
+        handler.handle(request);
+        return ResponseEntity.ok("Order created");
     }
 }
