@@ -1,0 +1,171 @@
+Here's a checklist of **Kafka + Spring Boot configuration best practices** to strengthen your system for production use:
+
+---
+
+### ✅ 1. **Serialization/Deserialization**
+- Use `JsonSerializer` / `JsonDeserializer` with a trusted package:
+```yaml
+spring.kafka.consumer.properties.spring.json.trusted.packages=*
+```
+- Or explicitly specify:
+```java
+props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.pizzahut.events");
+```
+
+---
+
+### ✅ 2. **Error Handling**
+Use `ErrorHandlingDeserializer` to prevent the app from crashing on bad messages:
+```yaml
+spring.kafka.consumer.value-deserializer=org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+spring.kafka.consumer.properties.spring.deserialization.value.delegate.class=org.springframework.kafka.support.serializer.JsonDeserializer
+```
+
+---
+
+### ✅ 3. **Manual Acknowledgment**
+Control commit offset only after successful processing:
+```java
+@KafkaListener(topics = "...", ackMode = "MANUAL")
+public void listen(..., Acknowledgment ack) {
+    // process message
+    ack.acknowledge();
+}
+```
+
+---
+
+### ✅ 4. **Concurrency & Performance**
+Scale processing with multiple consumer threads:
+```yaml
+spring.kafka.listener.concurrency=3
+```
+
+---
+
+### ✅ 5. **Retries + Backoff**
+Add retries and backoff using `@RetryableTopic` or Spring Retry:
+```java
+@RetryableTopic(attempts = "3", backoff = @Backoff(delay = 2000))
+@KafkaListener(topics = "order-created", groupId = "payment-group")
+```
+
+---
+
+### ✅ 6. **Dead Letter Topics (DLT)**
+To isolate bad messages:
+```java
+@DltHandler
+public void handleDLT(Object failedMessage, ConsumerRecord<?, ?> record) {
+    // Save or alert on bad message
+}
+```
+
+---
+
+### ✅ 7. **Health Check**
+Enable Kafka health indicators:
+```yaml
+management.health.kafka.enabled=true
+```
+
+---
+
+### ✅ 8. **Timeouts and Batch Settings**
+```yaml
+spring.kafka.consumer.max-poll-records=10
+spring.kafka.consumer.auto-offset-reset=earliest
+spring.kafka.consumer.fetch-max-wait=500
+```
+
+---
+
+### ✅ 9. **Security (Optional)**
+Enable SASL/SSL for secure brokers.
+
+---
+
+### ✅ 10. **Centralized Config Class**
+Create a `KafkaConfig.java` file instead of scattering producer/consumer configs across modules.
+
+Would you like me to generate a full production-ready config for your current services?
+
+Here's a clear explanation and the changes needed to enable **Kafka acknowledgment mode** (`AckMode`) and understand key consumer config properties like `auto.offset.reset`:
+
+---
+
+### ✅ 1. **Enable Manual Acknowledgment in Spring Kafka**
+
+You need to:
+- Add a `KafkaListenerContainerFactory` bean.
+- Update your `@KafkaListener` to include `Acknowledgment`.
+
+---
+
+### 🔧 `KafkaConsumerConfig.java` (in both services)
+
+```java
+@Bean
+public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(
+        ConsumerFactory<String, Object> consumerFactory) {
+
+    ConcurrentKafkaListenerContainerFactory<String, Object> factory =
+            new ConcurrentKafkaListenerContainerFactory<>();
+
+    factory.setConsumerFactory(consumerFactory);
+    factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
+    return factory;
+}
+```
+
+---
+
+### 🧾 Example: Manual `@KafkaListener` with Acknowledgment
+
+```java
+@KafkaListener(topics = "order-created", groupId = "payment-group")
+public void consume(OrderCreatedEvent event, Acknowledgment ack) {
+    try {
+        // process event
+        ack.acknowledge(); // manually commit offset
+    } catch (Exception e) {
+        // do not ack, will be retried
+    }
+}
+```
+
+---
+
+### 🧠 `auto.offset.reset` Explained:
+
+| Value     | Behavior                                                                 |
+|-----------|--------------------------------------------------------------------------|
+| `earliest`| Read messages from the beginning of the topic if no offset is committed. |
+| `latest`  | Only read new messages after consumer starts (default).                  |
+| `none`    | Throw error if no committed offset.                                      |
+
+🔹 For development or retrying old events, use:
+```yaml
+spring.kafka.consumer.auto-offset-reset=earliest
+```
+
+---
+
+Would you like me to update your Kafka config classes now to reflect this manual acknowledgment setup?
+
+```java
+// OrderService.java
+// Consider externalizing topic names to application.yml/properties for easier maintenance.
+
+// OrderService.java
+// The in-memory orderStore won't persist state across restarts. Use a DB if persistence is needed.
+
+// PaymentConsumer.java
+// Avoid printing raw event objects directly; use structured logging for observability and security.
+
+// PaymentConsumer.java
+// Consider separating payment validation and status generation for better testability.
+
+// PaymentStatusProducer.java
+// Add logging or error handling after kafkaTemplate.send() to track message delivery status.
+```
