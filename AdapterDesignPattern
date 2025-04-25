@@ -1,0 +1,83 @@
+Great! Let's dive into how the **Adapter Design Pattern** is used in your system and how it works step by step:
+
+---
+
+### ✅ What is the Adapter Pattern?
+
+The Adapter Pattern **wraps a legacy or incompatible interface** so it can be used as if it implements a modern interface.
+
+---
+
+### 🧩 Where it's used in your code?
+
+You've got a **legacy class** called `LegacyBankApi`:
+
+```java
+public class LegacyBankApi {
+    public void initiate(String refId, double value) {
+        System.out.println("Initiating legacy bank transaction...");
+    }
+}
+```
+
+But your modern system expects all payment processors to implement this:
+
+```java
+public interface PaymentProcessor {
+    void process(String orderId, double amount);
+}
+```
+
+These don’t match directly — **`initiate()` ≠ `process()`**.
+
+---
+
+### 🛠 How the Adapter Solves This
+
+You created a **`LegacyBankApiAdapter`**, which implements `PaymentProcessor` and wraps the legacy method:
+
+```java
+public class LegacyBankApiAdapter implements PaymentProcessor {
+    private final LegacyBankApi legacyApi = new LegacyBankApi();
+
+    @Override
+    public void process(String orderId, double amount) {
+        legacyApi.initiate(orderId, amount);
+    }
+}
+```
+
+Now your system can use the legacy API **as if it’s a regular `PaymentProcessor`**, without changing the legacy class.
+
+---
+
+### 🧪 How to Simulate It in Runtime
+
+Let’s say a customer pays via an external banking gateway. You can trigger this dynamically:
+
+#### Step 1: Modify `OrderCreatedEvent` to include a payment method
+```java
+private String paymentMethod; // e.g., "EXTERNAL"
+```
+
+#### Step 2: Update `OrderService` to send this method
+```java
+OrderCreatedEvent event = new OrderCreatedEvent(orderId, request.getCustomerId(), request.getAmount(), request.getPaymentMethod());
+```
+
+#### Step 3: In `PaymentConsumer`:
+```java
+var processor = PaymentProcessorFactory.getProcessor(event.getPaymentMethod());
+```
+
+Now if `"EXTERNAL"` is passed, it uses `ExternalPaymentAdapter`, which wraps `LegacyBankApi`.
+
+---
+
+### 📦 Summary
+
+- ✅ **LegacyBankApi** is unchanged (closed for modification).
+- ✅ You now use it like a modern `PaymentProcessor`.
+- ✅ Makes your system **open for extension** — you can plug in other legacy APIs the same way.
+
+Would you like me to show how to refactor `OrderCreatedEvent` and wiring this in a real request example?
