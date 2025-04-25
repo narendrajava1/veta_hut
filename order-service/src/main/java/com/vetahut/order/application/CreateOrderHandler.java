@@ -15,41 +15,47 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CreateOrderHandler {
 
-    private final OrderDomainService domainService;
-    private final OrderEventProducer producer;
-    private final CircuitBreakerRegistry circuitBreakerRegistry;
-    private final RetryQueue retryQueue;
+  private final OrderDomainService domainService;
+  private final OrderEventProducer producer;
+  private final CircuitBreakerRegistry circuitBreakerRegistry;
+  private final RetryQueue retryQueue;
 
-
-    public void handle(OrderRequest request) {
-        CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker("orderServiceBreaker");
-        Runnable task = () -> {
-            Order order = domainService.createOrder(request.getCustomerId(), request.getAmount());
-            OrderCreatedEvent event = new OrderCreatedEvent(order.getOrderId(), request.getCustomerId(), "CARD",request.getAmount());
-            producer.sendOrderCreatedEvent(event);
+  public void handle(OrderRequest request) {
+    CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker("orderServiceBreaker");
+    Runnable task =
+        () -> {
+          Order order = domainService.createOrder(request.getCustomerId(), request.getAmount());
+          OrderCreatedEvent event =
+              new OrderCreatedEvent(
+                  order.getOrderId(), request.getCustomerId(), "CARD", request.getAmount());
+          producer.sendOrderCreatedEvent(event);
         };
 
-        Runnable decoratedTask = CircuitBreaker.decorateRunnable(circuitBreaker, task);
+    Runnable decoratedTask = CircuitBreaker.decorateRunnable(circuitBreaker, task);
 
-        try {
-            decoratedTask.run();
-        } catch (Exception e) {
-            // Fallback logic can include retrying after delay, queuing the request, or manual intervention
-            System.err.println("Circuit breaker triggered: " + e.getMessage());
-            // Example: save to retry table or send to dead letter queue
-            fallback(request,e);
-        }
-
+    try {
+      decoratedTask.run();
+    } catch (Exception e) {
+      // Fallback logic can include retrying after delay, queuing the request, or manual
+      // intervention
+      System.err.println("Circuit breaker triggered: " + e.getMessage());
+      // Example: save to retry table or send to dead letter queue
+      fallback(request, e);
     }
+  }
 
-    private void fallback(OrderRequest request, Exception e) {
-        // Log fallback
-        System.err.println("Fallback triggered for customerId=" + request.getCustomerId() + " due to: " + e.getMessage());
+  private void fallback(OrderRequest request, Exception e) {
+    // Log fallback
+    System.err.println(
+        "Fallback triggered for customerId="
+            + request.getCustomerId()
+            + " due to: "
+            + e.getMessage());
 
-        // Example fallback behavior:
-        // 1. Save to retry queue
-        retryQueue.enqueue(request);
-        // 2. Persist to DB for retry
-        // 3. Notify via alert or metrics
-    }
+    // Example fallback behavior:
+    // 1. Save to retry queue
+    retryQueue.enqueue(request);
+    // 2. Persist to DB for retry
+    // 3. Notify via alert or metrics
+  }
 }

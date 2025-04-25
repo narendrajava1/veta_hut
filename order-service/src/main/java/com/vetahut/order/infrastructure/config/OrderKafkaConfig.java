@@ -2,6 +2,8 @@ package com.vetahut.order.infrastructure.config;
 
 import com.vetahut.events.OrderCreatedEvent;
 import com.vetahut.events.PaymentStatusEvent;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -12,43 +14,43 @@ import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Configuration
 public class OrderKafkaConfig {
 
-    @Bean
-    public ConsumerFactory<String, PaymentStatusEvent> paymentConsumerFactory(
-            @Qualifier("baseConsumerConfigs") Map<String, Object> baseConfigs) {
+  @Bean
+  public ConsumerFactory<String, PaymentStatusEvent> paymentConsumerFactory(
+      @Qualifier("baseConsumerConfigs") Map<String, Object> baseConfigs) {
 
-        Map<String, Object> consumerProps = new HashMap<>(baseConfigs);
-        consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, "order-group");
+    Map<String, Object> consumerProps = new HashMap<>(baseConfigs);
+    consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, "order-group");
 
-        JsonDeserializer<PaymentStatusEvent> deserializer = new JsonDeserializer<>(PaymentStatusEvent.class);
-        deserializer.addTrustedPackages("*");
-        deserializer.setRemoveTypeHeaders(false);
-        return new DefaultKafkaConsumerFactory<>(consumerProps, new StringDeserializer(), deserializer);
-    }
+    JsonDeserializer<PaymentStatusEvent> deserializer =
+        new JsonDeserializer<>(PaymentStatusEvent.class);
+    deserializer.addTrustedPackages("*");
+    deserializer.setRemoveTypeHeaders(false);
+    return new DefaultKafkaConsumerFactory<>(consumerProps, new StringDeserializer(), deserializer);
+  }
 
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, PaymentStatusEvent> paymentKafkaListenerContainerFactory(
-            ConsumerFactory<String, PaymentStatusEvent> paymentConsumerFactory) {
-        ConcurrentKafkaListenerContainerFactory<String, PaymentStatusEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(paymentConsumerFactory);
-        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
-        return factory;
-    }
+  @Bean
+  public ConcurrentKafkaListenerContainerFactory<String, PaymentStatusEvent>
+      paymentKafkaListenerContainerFactory(
+          ConsumerFactory<String, PaymentStatusEvent> paymentConsumerFactory) {
+    ConcurrentKafkaListenerContainerFactory<String, PaymentStatusEvent> factory =
+        new ConcurrentKafkaListenerContainerFactory<>();
+    factory.setConsumerFactory(paymentConsumerFactory);
+    factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
+    return factory;
+  }
 
-    @Bean
-    public ProducerFactory<String, OrderCreatedEvent> orderProducerFactory(
-            @Qualifier("baseProducerConfigs") Map<String, Object> baseConfigs) {
-        return new DefaultKafkaProducerFactory<>(baseConfigs);
-    }
+  @Bean
+  public ProducerFactory<String, OrderCreatedEvent> orderProducerFactory(
+      @Qualifier("baseProducerConfigs") Map<String, Object> baseConfigs) {
+    return new DefaultKafkaProducerFactory<>(baseConfigs);
+  }
 
-    @Bean
-    public KafkaTemplate<String, OrderCreatedEvent> orderKafkaTemplate(
-            ProducerFactory<String, OrderCreatedEvent> orderProducerFactory) {
-        return new KafkaTemplate<>(orderProducerFactory);
-    }
+  @Bean
+  public KafkaTemplate<String, OrderCreatedEvent> orderKafkaTemplate(
+      ProducerFactory<String, OrderCreatedEvent> orderProducerFactory) {
+    return new KafkaTemplate<>(orderProducerFactory);
+  }
 }

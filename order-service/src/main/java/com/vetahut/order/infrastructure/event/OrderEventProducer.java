@@ -9,10 +9,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OrderEventProducer {
 
-    private final KafkaTemplate<String, OrderCreatedEvent> orderKafkaTemplate;
+  private final KafkaTemplate<String, OrderCreatedEvent> orderKafkaTemplate;
 
-
-    public void sendOrderCreatedEvent(OrderCreatedEvent event) {
-        orderKafkaTemplate.send("order-created", event);
-    }
+  public void sendOrderCreatedEvent(OrderCreatedEvent event) {
+    orderKafkaTemplate.send("order-created", event);
+  }
 }

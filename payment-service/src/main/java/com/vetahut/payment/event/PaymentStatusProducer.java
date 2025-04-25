@@ -8,11 +8,10 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class PaymentStatusProducer {
-    
-    
-    private final KafkaTemplate<String, PaymentStatusEvent> paymentKafkaTemplate;
 
-    public  void sendPaymentStatus(PaymentStatusEvent event) {
-        paymentKafkaTemplate.send("payment-status", event);
-    }
+  private final KafkaTemplate<String, PaymentStatusEvent> paymentKafkaTemplate;
+
+  public void sendPaymentStatus(PaymentStatusEvent event) {
+    paymentKafkaTemplate.send("payment-status", event);
+  }
 }

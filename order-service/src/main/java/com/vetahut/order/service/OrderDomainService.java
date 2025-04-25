@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class OrderDomainService {
-    public Order createOrder(String customerId, double amount) {
-        return new Order(customerId, amount);
-    }
+  public Order createOrder(String customerId, double amount) {
+    return new Order(customerId, amount);
+  }
 }

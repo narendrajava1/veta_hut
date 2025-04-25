@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaymentStatusEvent {
-    private String orderId;
-    private String status;
+  private String orderId;
+  private String status;
 }
