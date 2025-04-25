@@ -1,9 +1,7 @@
 package com.vetahut.order.service;
 
-import com.vetahut.events.OrderCreatedEvent;
 import com.vetahut.events.PaymentStatusEvent;
-import com.vetahut.order.event.OrderEventProducer;
-import com.vetahut.order.model.Order;
+import com.vetahut.order.infrastructure.event.OrderEventProducer;
 import com.vetahut.order.status.OrderStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -11,7 +9,6 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service

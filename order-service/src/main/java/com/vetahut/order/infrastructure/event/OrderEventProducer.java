@@ -1,4 +1,4 @@
-package com.vetahut.order.event;
+package com.vetahut.order.infrastructure.event;
 
 import com.vetahut.events.OrderCreatedEvent;
 import lombok.RequiredArgsConstructor;

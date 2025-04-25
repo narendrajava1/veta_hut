@@ -1,4 +1,4 @@
-package com.vetahut.order.config;
+package com.vetahut.order.infrastructure.config;
 
 import com.vetahut.events.OrderCreatedEvent;
 import com.vetahut.events.PaymentStatusEvent;
