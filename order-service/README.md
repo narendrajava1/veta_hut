@@ -24,3 +24,7 @@ order-service/
 ├── event/OrderEventProducer.java
 ├── model/OrderRequest.java
 └── config/KafkaProducerConfig.java
+
+
+## To format the code run this below command
+``mvn com.coveo:fmt-maven-plugin:2.9.1:format``
