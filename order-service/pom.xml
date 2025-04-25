@@ -54,6 +54,9 @@
                 <groupId>com.coveo</groupId>
                 <artifactId>fmt-maven-plugin</artifactId>
                 <version>2.9.1</version>
+                <configuration>
+                    <style>GOOGLE</style> <!-- Or AOSP, or a custom config -->
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
