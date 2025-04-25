@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 public class OrderCreatedEvent {
     private String orderId;
     private String customerId;
+    private String paymentMethod;
     private double amount;
 }
