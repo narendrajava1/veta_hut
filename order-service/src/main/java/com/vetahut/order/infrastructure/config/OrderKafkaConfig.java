@@ -2,9 +2,11 @@ package com.vetahut.order.infrastructure.config;
 
 import com.vetahut.events.OrderCreatedEvent;
 import com.vetahut.events.PaymentStatusEvent;
+import com.vetahut.order.model.OrderType;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -45,6 +47,8 @@ public class OrderKafkaConfig {
   @Bean
   public ProducerFactory<String, OrderCreatedEvent> orderProducerFactory(
       @Qualifier("baseProducerConfigs") Map<String, Object> baseConfigs) {
+    baseConfigs.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, KafkaGeographicPartitioner.class);
+    baseConfigs.put("partition.booking.order_type", OrderType.DELIVERY.getOrderType());
     return new DefaultKafkaProducerFactory<>(baseConfigs);
   }
 

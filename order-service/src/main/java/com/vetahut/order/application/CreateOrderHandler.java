@@ -24,10 +24,16 @@ public class CreateOrderHandler {
     CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker("orderServiceBreaker");
     Runnable task =
         () -> {
-          Order order = domainService.createOrder(request.getCustomerId(), request.getAmount());
+          Order order =
+              domainService.createOrder(
+                  request.getCustomerId(), request.getAmount(), request.getOrderType());
           OrderCreatedEvent event =
               new OrderCreatedEvent(
-                  order.getOrderId(), request.getCustomerId(), "CARD", request.getAmount());
+                  order.getOrderId(),
+                  request.getCustomerId(),
+                  "CARD",
+                  request.getOrderType(),
+                  request.getAmount());
           producer.sendOrderCreatedEvent(event);
         };
 
